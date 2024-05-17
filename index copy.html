@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="./styles.css" type="text/css" charset="utf-8">
+	<link rel="stylesheet" href="./webix/codebase/webix.css" type="text/css" charset="utf-8">
+	<link rel="stylesheet" href="./webix/codebase/skins/touch.css" type="text/css" charset="utf-8">
+	<script src="./webix/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
+	<meta name="viewport" content="initial-scale = 1.0, maximum-scale = 1.0, user-scalable = no">
+	<title>Demo</title>
+</head>
+
+<body>
+	<script src="scripts.js"></script>
+	<script src="program.js"></script>
+	<script>
+		var formatoData = webix.Date.dateToStr("%d/%m/%y");
+		webix.i18n.setLocale("pt-BR");
+        const objPrograma = new Programa();
+		function gby() {
+			$$("dt").data.ungroup();
+			$$("dt").data.group({
+				by: function (obj) {
+					return obj.NOME_ORIGEM + "-" + obj.NOME_MES + "-" + obj.ANO
+				},
+				map: {
+					ANO: ["ANO"], NOME_MES: ["NOME_MES"], NOME_CATEGORIA: ["NOME_ORIGEM"], VALOR: ["VALOR", "sum"]
+				}
+			});
+			$$("dt").data.group({
+				by: function (obj) {
+					return obj.NOME_MES + "-" + obj.ANO
+				},
+				map: {
+					ANO: ["ANO"], NOME_CATEGORIA: ["NOME_MES"], VALOR: ["VALOR", "sum"]
+				}
+			});
+			$$("dt").data.group({
+				by: "ANO",
+				map: {
+					NOME_CATEGORIA: ["ANO"], NOME_ORIGEM: ["NOME_ORIGEM"], VALOR: ["VALOR", "sum"]
+				}
+			});
+		}
+		webix.ready(function () {
+			webix.ui.fullScreen();
+			webix.ui({
+				rows: [
+					{
+						view: "multiview",
+						cells: [
+							{
+								id: "pgPrincipal",
+								rows: [
+									{
+										height: 40,
+										type: "header",
+										template: "<div style='text-align:center'><span>Tela Principal G5 </span></div>",
+									},
+									{
+										height: 100,
+										template: "<div style=''><span><br><br>Digite a senha para liberar a opção de atualização dos dados </span></div>",
+
+									}, {
+										//template: "<div style='text-align:center'><span>teste </span></div>",
+										//body: {
+										rows: [
+											{ height: 20 },
+											{
+												view: "text",
+												type: "password",
+												id: 'txtSenha',
+												value: "123",
+												label: "Senha",
+												//	labelAlign: "right",
+												labelWidth: 100,
+												placeholder: "digite a senha e clique em Atualizar dados",
+											},
+											{ height: 10 },
+											{
+												height: 40,
+												view: "button",
+												id: 'btnAtualizar',
+												label: 'Atualizar dados', inputWidth: 200,
+												height: 60,
+												click: function (ev, id) {
+													if ($$("txtSenha").getValue() == 123) {
+														webix.message("Carregando...");
+														objPrincipal.fncCarregar(function () {
+															//});
+															const vAnoAtual = new Date().getFullYear();
+															const vDadosDoAno = objPrincipal.filtrarPorCampo(objPrincipal.dados, [{ "ANO": vAnoAtual }]);
+															const vDadosSaida = objPrincipal.filtrarPorCampo(objPrincipal.dados, [{ "TIPO": "Saída" }]);
+															console.log(objPrincipal.somatorios.somatorioPorAnoEMes);
+															objPrincipal.visualisarDados({ "2024": objPrincipal.somatorios.somatorioPorAnoEMes["2024"] }, 'verse_1', "2024");
+
+															let c_Dados = objPrincipal.somatorios.somatorioPorAnoNomeOrigemMes["2024"];
+															let c_Chaves = Object.keys(c_Dados);
+															let vContador = 0;
+															// Itera sobre as chaves
+															for (let i = 0; i < c_Chaves.length; i++) {
+																const chave = c_Chaves[i]; // Obtém a chave atual
+																const imovel = c_Dados[chave]; // Obtém o valor correspondente à chave
+																vContador = i + 2;
+																const vNomeView = 'verse_' + String(vContador);
+																const vOjTemplate = objPrincipal.retornarTemplateResumo(vNomeView);
+																$$("verses").getBody().addView(vOjTemplate);
+																console.log(chave);
+																objPrincipal.visualisarDados({ chave: imovel }, vNomeView, chave)
+																// Seu código para processar cada imóvel...
+															};
+															const chavesOrdenadas = Object.keys(objPrincipal.somatorios.somatorioPorAnoNomeCategoriaMes["2024"]).sort();
+															// Criar um novo objeto com as chaves ordenadas
+															const dadosOrdenados = {};
+															chavesOrdenadas.forEach(chave => {
+																dadosOrdenados[chave] = objPrincipal.somatorios.somatorioPorAnoNomeCategoriaMes["2024"][chave];
+															});
+															//	console.log(dadosOrdenados);
+															c_Dados = dadosOrdenados;
+															c_Chaves = Object.keys(c_Dados);
+
+															// Itera sobre as chaves
+															for (let i = 0; i < c_Chaves.length; i++) {
+																const chave = c_Chaves[i]; // Obtém a chave atual
+																const imovel = c_Dados[chave]; // Obtém o valor correspondente à chave
+																const vNomeView = 'verseCategoria_' + String(i + 1);
+																const vOjTemplate = objPrincipal.retornarTemplateResumo(vNomeView);
+																$$("verseCategorias").getBody().addView(vOjTemplate);
+																console.log(chave);
+																objPrincipal.visualisarDados({ chave: imovel }, vNomeView, chave)
+																// Seu código para processar cada imóvel...
+
+															}
+
+															/*
+
+															const c_Dados_cat = objPrincipal.somatorios.somatorioPorAnoNomeCategoriaMes["2024"];
+															const c_Chaves_cat = Object.keys(c_Dados_cat);
+
+															
+															// Itera sobre as chaves
+															for (let i = 0; i < c_Chaves_cat.length; i++) {
+																const chave = c_Chaves_cat[i]; // Obtém a chave atual
+																const imovel = c_Dados_cat[chave]; // Obtém o valor correspondente à chave
+																const vNomeView = 'verse_' + String(vContador + 2);
+																const vOjTemplate = objPrincipal.retornarTemplateResumo(vNomeView);
+																$$("verses").getBody().addView(vOjTemplate);
+																console.log(chave);
+																objPrincipal.visualisarDados({ chave: imovel }, vNomeView, chave)
+																// Seu código para processar cada imóvel...
+																vContador = i;
+															}
+															*/
+															//objPrincipal.visualisarDados({ "2024": objPrincipal.somatorios.somatorioPorAnoNomeOrigemMes["2024"] }, 'verse_2', "Ap Jonatam")
+															//objPrincipal.visualisarDados({ "2024": objPrincipal.somatorios.somatorioPorAnoNomeOrigemMes["2024"] }, 'verse_1')
+															console.log(vDadosDoAno);
+															console.log(vDadosSaida);
+															$$("dt").clearAll();
+															$$("dt").parse(vDadosSaida);
+															$$("tree").clearAll();
+															$$("tree").parse(vDadosDoAno);
+															$$("grp").enable();
+														});
+													} else {
+														alert('Senha errada')
+													}
+												}
+											}, {},
+										],
+										//}
+									},
+								]
+							},
+							{
+								view: "accordion",
+								id: "pgResumo",
+								rows: [
+									/*{
+										height: 40,
+										type: "header",
+										template: "<div style='text-align:center'><span>Resumo de Gastos</span></div>",
+									},*/
+									{
+										view: "accordionitem",
+										header: "Resumo por Origem",
+										id: 'tplTeste',
+										margin: 10,
+										body: {
+											rows: [
+												{
+													margin: 5, cols: [
+														{
+															view: "button", value: "Imprimir por origem", width: 180, height: 60,
+															click: function () {
+																webix.print($$("verses"));
+															}
+														},
+													]
+												},
+												{
+													view: "scrollview",
+													borderless: true,
+													id: "verses",
+													scroll: "xy",
+													body: {
+														width: 400,
+														rows: [
+															{ id: "", template: "<strong>Resumo dos gastos de 2024, por origem de gastos</strong>", autoheight: true },
+															{ id: "verse_1", template: "html->dadosContainer1", autoheight: true },
+														]
+													}
+												}
+											]
+										}
+									},
+									{
+										view: "accordionitem",
+										header: "Resumo por Categoria",
+										collapsed: true,
+										margin: 10,
+										body: {
+											rows: [
+												{
+													margin: 5, cols: [
+														{
+															view: "button", value: "Imprimir por categoria", width: 180, height: 60,
+															click: function () {
+																webix.print($$("verseCategorias"));
+															}
+														},
+													]
+												},
+												{
+													view: "scrollview",
+													borderless: true,
+													id: "verseCategorias",
+													scroll: "xy",
+													body: {
+														width: 400,
+														rows: [
+															{ id: "", template: "<strong>Resumo dos gastos de 2024, por Categoria</strong>", autoheight: true },
+														]
+													}
+												}
+											]
+										}
+									},
+								]
+							},
+							{
+								id: "results",
+								view: "accordion",
+								multi: "mixed",
+								rows: [
+									{
+										header: "Lista de Despesas", body:
+										{
+											rows: [
+												{
+													cols: [
+														{
+															view: "button", type: "form", id: 'grp', label: 'Agrupar', disabled: true, height: 60,
+															click: function (id, event) {
+																gby();
+																$$("grp").disable();
+															}
+														},
+														{
+															view: "button", type: "form", id: '', label: 'Expandir', height: 60,
+														},
+														{
+															view: "button", type: "form", id: '', label: 'Contrair', height: 60,
+														},
+														{
+															view: "button", label: "imprimir", type: "form", id: "btnImp", height: 60,
+															click: function () {
+																$$("btnImp").disable();
+																if (objPrincipal.isMobile.any()) {
+																	setTimeout(() => {
+																		alert("Impressão indisponivel para dispositivo móvel(celular)!");
+																		$$("btnImp").enable();
+																	},
+																		10);
+																	return;
+																}
+																$$("btnImp").enable();
+																webix.print($$("dt"));
+															}
+														}]
+												},
+												{
+													view: "treetable",
+													autoConfig: false,
+													//head:"DataTable", 
+													id: "dt",
+													columns: [{
+														id: "desc",
+														header: "Descrição",
+														width: 250,
+														template: function (obj, common) {
+															return common.treetable(obj, common) + (obj.NOME_CATEGORIA);
+														}
+													},
+													{
+														id: "VALOR",
+														header: "Valor Despesa",
+														width: 150,
+														template: function (obj) {
+															const cValor = objPrincipal.retornarValorMoeda(obj.VALOR);
+															if (obj.$group)
+																return "<strong>" + cValor + "</strong>";
+
+															return cValor;
+														}
+													}
+													],
+													//autowidth: true,
+													prerender: true,
+													scroll: true, scrollX: false,
+													select: true
+												}
+											]
+										}
+									}
+								]
+							},
+							{
+								id: "list",
+								type: "clean",
+								rows: [
+									{
+										cells: [
+											{
+												view: "form", id: "grouplist",
+												head: "DataTable",
+												rows: [
+													{
+														height: 40,
+														type: "header",
+														template: "<div style='text-align:center'><span>Lista geral de gastos</span></div>"
+													},
+													{
+														cols: [
+															/*{cols: [
+																
+																	view: "combo", id: "cbItensPesquisa", value: 1, label: "Filtro:", labelWidth: 55, width: 235, suggest: [
+																		{ id: 1, value: "Origem do gasto" }, { id: 2, value: "Categoria" }],
+																	on: {
+																		onChange: function (newValue, oldValue) {
+																			$$("unitlist_input").setValue("");
+	
+																		}
+																	}
+	
+																},
+	
+																{
+																	view: "text", id: "unitlist_input", label: "", css: "fltr", labelWidth: 5,
+																	placeholder: "digite aqui para pesquisar",
+	
+																},
+	
+															]*/
+															{
+																view: "radio", labelWidth: 90, id: "cbItensPesquisa", value: 1, vertical: true, label: "Filtro",
+																options: [{ id: 1, value: "Origem do gasto" }, { id: 2, value: "Categoria" }]
+															},
+															{
+																view: "button", value: "Imprimir ", type: "form", width: 100, height: 60,
+																click: function () {
+																	webix.print($$("tree"));
+																}
+															},
+														]
+													},
+													{
+														view: "text", height: 40, id: "unitlist_input", label: "", css: "fltr", labelWidth: 5,
+														placeholder: "digite aqui para pesquisar",
+
+													},
+													{
+														view: "unitlist",
+														id: "tree",
+														filterMode: {
+															level: 0,
+															showSubItems: 1
+														},
+														uniteBy: function (obj) {
+															return obj.NOME_MES;
+														},
+														template: function (obj) {
+															let vTipo = "<span >"
+															const valorFormatado = Intl.NumberFormat('pt-br',
+																{ style: 'currency', currency: 'BRL' }).format(obj.VALOR)
+
+
+															if (obj.TIPO != 'Entrada')
+																vTipo = "<span class='lista-text-tipo'>";
+
+															return "<div class='lista-container'>" +
+																"  <div class='lista-left-column'>" +
+																"    <span class='lista-text-top' >" + obj.NOME_ORIGEM + "</span>" +
+																"    <span > ( " + obj.NOME_CATEGORIA + " )</span><br>" +
+																"    <div class='lista-text-justificado'> <span >" + obj.OBSERVACAO + "</span></div>" +
+																"  </div>" +
+																"  <div class='lista-right-column'>" +
+																"     <span >" + formatoData(obj.DATA) + "</span><br>" +
+																"     <span >" + valorFormatado + "</span><br>" +
+																vTipo + obj.TIPO + "</span>" +
+																"  </div>" +
+																"</div>"
+
+														},
+														type: {
+															height: 90
+														},
+														select: true,
+														scheme: {
+															$sort: {
+																//by: "NOME_ORIGEM",
+																//dir: "desc"
+															}
+														},
+														//data: webix.copy(groupdata),
+													}
+												]
+											},
+											{id: "tree1",
+												cells:	[objPrograma.componentes.telaPrincipal]
+											}
+										]
+									},
+									{ height: 5 },
+									{
+										align: "center",
+										view: "segmented",
+										multiview: true, selected: "grouplist", options: [
+											{ id: "grouplist", value: "Listagem", width: 100 },
+											{ id: "tree1", value: "2024", width: 100 }
+										],
+										on: {
+											onChange: function () {
+												
+											}
+										}
+									},
+									{ height: 5 }
+								]
+							},
+						]
+					},
+					{
+						view: "tabbar",
+						type: "iconTop",
+						multiview: true,
+						options: [
+							{ id: "pgPrincipal", icon: "flag-o", value: "Principal" },
+							{ id: "pgResumo", icon: "cog", value: "Resumo" },
+							{ id: "results", icon: "group", value: "Geral" },
+							//{ id: "chart", icon: "bar-chart-o", value: "Chart" },
+							{ id: "list", icon: "bars", value: "Lançamentos" },
+
+						]
+					}
+				]
+			});
+
+			$$("unitlist_input").attachEvent("onTimedKeyPress", function () {
+				var value = this.getValue().toLowerCase();
+				console.log($$("cbItensPesquisa").getValue());
+				$$("tree").filter(function (obj) {
+					if ($$("cbItensPesquisa").getValue() == 1)
+						return obj.NOME_ORIGEM.toLowerCase().indexOf(value) == 0;
+					return obj.NOME_CATEGORIA.toLowerCase().indexOf(value) == 0;
+				})
+			});
+		})
+
+	</script>
+	<div id="dadosContainer" style="display:none;"></div>
+	<div id="dadosContainer2" style="display:none;"></div>
+</body>
+
+</html>

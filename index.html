@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="./styles.css" type="text/css" charset="utf-8">
+	<link rel="stylesheet" href="./webix/codebase/webix.css" type="text/css" charset="utf-8">
+	<link rel="stylesheet" href="./webix/codebase/skins/touch.css" type="text/css" charset="utf-8">
+	<script src="./webix/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
+	<meta name="viewport" content="initial-scale = 1.0, maximum-scale = 1.0, user-scalable = no">
+	<title>Demo</title>
+</head>
+
+<body>
+	<script src="./persistencia/conexao.js"></script>
+	<script src="scripts.js"></script>
+
+	<script src="program.js"></script>
+	<script>
+		var formatoData = webix.Date.dateToStr("%d/%m/%y");
+		webix.i18n.setLocale("pt-BR");
+		const objPrograma = new Programa();
+		console.log(objPrograma);
+
+		webix.ready(function () {
+			webix.ui.fullScreen();
+			webix.ui({
+				rows: [
+					{
+						view: "multiview",
+						cells: [
+							objPrograma.componentes.telaPrincipal,
+							{
+								view: "accordion",
+								id: "pgResumo",
+								rows: objPrograma.componentes.telaResumo,
+							},
+							{
+								id: "pgDespesasAgrupadas",
+								rows: objPrograma.componentes.telaDespesasAgrupadas
+							},
+							{
+								id: "list",
+								type: "clean",
+								rows: [
+									{
+										cells: [
+											{
+												view: "form", id: "listagem",
+												head: "DataTable",
+												rows: objPrograma.componentes.telaLancamentos
+											},
+											{
+												view: "treetable",
+												autoConfig: false,
+												head: "Grade",
+												id: "treeGrade",
+												//ANO	MES	DATA	CATEGORIA	VALOR	ORIGEM	TIPO	OBSERVACAO	NOME_ORIGEM	NOME_CATEGORIA	NOME_MES	
+												columns: [{
+													id: "MES",
+													header: "Mês",
+													width: 250,
+													hidden: true,
+
+												},
+												
+												{
+													id: "NOME_ORIGEM",
+													//sort: "date",
+													
+													header: "Origem",
+													width: 180,
+												},
+												
+												{
+													id: "DATA",
+													sort: "date",
+													format: webix.Date.dateToStr("%d/%m/%y"),
+													header: "Data",
+													width: 80,
+												},
+												{
+													id: "VALOR",
+													header: "Valor",
+													css : {"text-align":"right"},
+													width: 100, format: webix.Number.numToStr({
+														groupDelimiter: ".",
+														groupSize: 3,
+														decimalDelimiter: ",",
+														decimalSize: 2
+													})
+												},
+												{
+													id: "OBSERVACAO",
+													sort: "string",
+																							header: "Descrição do Gasto",
+													width: 280,
+												}
+												],
+												//autowidth: true,
+												prerender: true,
+												scroll: true,
+												// select: true
+											}
+										]
+									},
+									{ height: 5 },
+									{
+										align: "center",
+										view: "segmented",
+										multiview: true, selected: "grouplist", options: [
+											{ id: "listagem", value: "Lista", width: 100 },
+											{ id: "treeGrade", value: "Grade", width: 100 }
+										],
+										on: {
+											onChange: function () {
+											}
+										}
+									},
+									{ height: 5 }
+								]
+							},
+						]
+					},
+					{
+						view: "tabbar",
+						type: "iconTop",
+						multiview: true,
+						options: [
+							{ id: "pgPrincipal", icon: "flag-o", value: "Principal" },
+							{ id: "pgResumo", icon: "cog", value: "Resumo" },
+							{ id: "pgDespesasAgrupadas", icon: "group", value: "Geral" },
+							//{ id: "chart", icon: "bar-chart-o", value: "Chart" },
+							{ id: "list", icon: "bars", value: "Lançamentos" },
+						]
+					}
+				]
+			});
+
+			$$("unitlist_input").attachEvent("onTimedKeyPress", function () {
+				var value = this.getValue().toLowerCase();
+				console.log($$("cbItensPesquisa").getValue());
+				$$("tree").filter(function (obj) {
+					if ($$("cbItensPesquisa").getValue() == 1)
+						return obj.NOME_ORIGEM.toLowerCase().indexOf(value) == 0;
+					return obj.NOME_CATEGORIA.toLowerCase().indexOf(value) == 0;
+				})
+			});
+		})
+	</script>
+	<div id="dadosContainer" style="display:none;"></div>
+	<div id="dadosContainer2" style="display:none;"></div>
+</body>
+
+</html>

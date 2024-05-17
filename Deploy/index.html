@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="stylesheet" href="./styles.css" type="text/css" charset="utf-8">
+	<link rel="stylesheet" href="./webix/codebase/webix.css" type="text/css" charset="utf-8">
+	<link rel="stylesheet" href="./webix/codebase/skins/touch.css" type="text/css" charset="utf-8">
+	<script src="./webix/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
+	<meta name="viewport" content="initial-scale = 1.0, maximum-scale = 1.0, user-scalable = no">
+	<title>Demo</title>
+
+</head>
+
+<body>
+	<script src="scripts.js"></script>
+	<script>
+
+		var formatoData = webix.Date.dateToStr("%d/%m/%y");
+		webix.i18n.setLocale("pt-BR");
+
+
+		var list_data = [
+			{ id: 1, name: "Peter Johnson" },
+			{ id: 2, name: "Rebeca Rid" },
+			{ id: 3, name: "Alex Murphy" },
+			{ id: 4, name: "Tory Miles" },
+			{ id: 5, name: "Rene Samerson" },
+			{ id: 6, name: "Anna Miranovich" },
+			{ id: 7, name: "Kristopher Turner" },
+			{ id: 8, name: "Michael Evans" },
+			{ id: 9, name: "Jodi Fernandez " },
+			{ id: 10, name: "Carmen Sims " },
+			{ id: 11, name: "Jody Silva" },
+			{ id: 12, name: "Jan Morris " }
+		];
+		function gby() {
+			$$("dt").data.ungroup();
+			$$("dt").data.group({
+				by: function (obj) {
+					return obj.NOME_ORIGEM + "-" + obj.NOME_MES + "-" + obj.ANO
+				},
+				map: {
+					ANO: ["ANO"], NOME_MES: ["NOME_MES"], NOME_CATEGORIA: ["NOME_ORIGEM"], VALOR: ["VALOR", "sum"]
+				}
+			});
+			$$("dt").data.group({
+				by: function (obj) {
+					return obj.NOME_MES + "-" + obj.ANO
+				},
+				map: {
+					ANO: ["ANO"], NOME_CATEGORIA: ["NOME_MES"], VALOR: ["VALOR", "sum"]
+				}
+			});
+			$$("dt").data.group({
+				by: "ANO",
+				map: {
+					NOME_CATEGORIA: ["ANO"], NOME_ORIGEM: ["NOME_ORIGEM"], VALOR: ["VALOR", "sum"]
+				}
+			});
+		}
+
+		webix.ready(function () {
+			webix.ui.fullScreen();
+			webix.ui({
+				rows: [
+					{
+						view: "multiview",
+						cells: [
+							{
+								id: "pgPrincipal",
+								rows: [
+									{
+										height: 40,
+										type: "header",
+										template: "<div style='text-align:center'><span>Tela Principal G5 </span></div>",
+									},
+									{
+										height: 100,
+										template: "<div style=''><span><br><br>Digite a senha para liberar a opção de atualização dos dados </span></div>",
+
+									}, {
+										//template: "<div style='text-align:center'><span>teste </span></div>",
+										//body: {
+										rows: [
+											{ height: 20 },
+											{
+												view: "text",
+												type: "password",
+
+												//value: "123pass",
+												label: "Senha",
+												//	labelAlign: "right",
+												labelWidth: 100,
+												placeholder: "digite a senha"
+
+											},
+											{ height: 10 },
+											{
+												height: 40,
+												view: "button", id: '', disabled: true, label: 'Atualizar dados', inputWidth: 180,
+											}, {},
+										],
+										//}
+
+									},
+								]
+							},
+							{
+
+								id: "pgResumo",
+								rows: [
+									{
+										height: 40,
+										type: "header",
+										template: "<div style='text-align:center'><span>Resumo de Gastos</span></div>",
+									},
+
+									{
+										//    view:"template",
+										id: 'tplTeste',
+										margin: 10,
+										rows: [
+											{
+												margin: 5, cols: [
+													{
+														view: "button", value: "Print all verses", click: function () {
+															webix.print($$("verses"));
+														}
+													},
+													{
+														view: "button", value: "Print visible part", click: function () {
+															webix.print($$("verses"), { scroll: true });
+														}
+													},
+												]
+											},
+											{
+												view: "scrollview",
+												borderless: true,
+												id: "verses",
+												scroll: "xy",
+												body: {
+													width: 400,
+													rows: [
+														{ id: "verse_1", template: "html->dadosContainer1", autoheight: true },
+														{ id: "verse_2", template: "html->dadosContainer2", autoheight: true },
+														
+														{ id: "verse_3", template: "html->dadosContainer3", autoheight: true },
+														{ id: "verse_4", template: "html->dadosContainer4", autoheight: true },
+														{ id: "verse_5", template: "html->dadosContainer5", autoheight: true },
+														{ id: "verse_6", template: "html->dadosContainer6", autoheight: true },
+
+													]
+												}
+											}
+										]
+
+									}
+									,
+								]
+							},
+							{
+								id: "results",
+								view: "accordion",
+								multi: "mixed",
+								rows: [
+									{
+										header: "Add Result",
+										body: {
+											view: "form", autoheight: false, height: 30, id: "myform", scroll: true,
+											elements: [
+												/*{ view: "text", id: 'name', label: 'Name', labelWidth: 100, value: "Peter Johnson" },
+												{ view: "Result", view: "slider", label: "Value", labelWidth: 100, value: "80", name: "result", title: "#value#" },
+												{
+													view: "radio", vertical: true, labelWidth: 100, label: "Exam type", Points: "Practice",
+													options: ["Theory", "Practice"]
+												},*/
+												{
+													view: "button", type: "form", id: 'atu', label: 'Atualizar', inputWidth: 100,
+													click: function (id, event) {
+
+														webix.message("Carregando...");
+
+														objPrincipal.fncCarregar(function () {
+															//});
+															const vAnoAtual = new Date().getFullYear();
+															const vDadosDoAno = objPrincipal.filtrarPorCampo(objPrincipal.dados, [{ "ANO": vAnoAtual }]);
+															const vDadosSaida = objPrincipal.filtrarPorCampo(objPrincipal.dados, [{ "TIPO": "Saída" }]);
+															console.log(objPrincipal.somatorios.somatorioPorAnoEMes);
+															objPrincipal.visualisarDados({ "2024": objPrincipal.somatorios.somatorioPorAnoEMes["2024"] }, 'verse_1', "2024")
+															
+															const cDados = objPrincipal.somatorios.somatorioPorAnoNomeOrigemMes["2024"];
+															const chaves = Object.keys(cDados);
+
+															// Itera sobre as chaves
+															for (let i = 0; i < chaves.length; i++) {
+																const chave = chaves[i]; // Obtém a chave atual
+																const imovel = cDados[chave]; // Obtém o valor correspondente à chave
+																console.log(chave);
+																objPrincipal.visualisarDados({ chave: imovel}, 'verse_'+String(i+2), chave)
+																// Seu código para processar cada imóvel...
+															}
+															//objPrincipal.visualisarDados({ "2024": objPrincipal.somatorios.somatorioPorAnoNomeOrigemMes["2024"] }, 'verse_2', "Ap Jonatam")
+															//objPrincipal.visualisarDados({ "2024": objPrincipal.somatorios.somatorioPorAnoNomeOrigemMes["2024"] }, 'verse_1')
+															console.log(vDadosDoAno);
+															console.log(vDadosSaida);
+															$$("dt").clearAll();
+															$$("dt").parse(vDadosSaida);
+															$$("tree").clearAll();
+															$$("tree").parse(vDadosDoAno);
+															$$("grp").enable();
+														});
+
+
+														//  $$("dt").openAll();
+													}
+												},
+												{
+													view: "button", type: "form", id: 'grp', label: 'Agrupar', disabled: true, inputWidth: 100,
+													click: function (id, event) {
+														// your code here
+														gby();
+														$$("grp").disable();
+
+													}
+												}
+
+											]
+										}
+									},
+									{
+										header: "Lista de Despesas", body:
+										{
+											rows: [
+												{
+													view: "button", label: "imprimir", id: "btnImp",
+													click: function () {
+														$$("btnImp").disable();
+														if (objPrincipal.isMobile.any()) {
+															setTimeout(() => {
+																alert("Impressão indisponivel para dispositivo móvel(celular)!");
+																$$("btnImp").enable();
+															},
+																10);
+
+															return;
+														}
+														$$("btnImp").enable();
+														webix.print($$("dt"));
+													}
+												},
+												{
+													view: "treetable",
+													autoConfig: false,
+													//head:"DataTable", 
+													id: "dt",
+													columns: [{
+														id: "desc",
+														header: "Descrição",
+														width: 250,
+														template: function (obj, common) {
+															return common.treetable(obj, common) + (obj.NOME_CATEGORIA);
+														}
+													},
+													{
+														id: "VALOR",
+														header: "Valor Despesa",
+														width: 150,
+														template: function (obj) {
+															const cValor = objPrincipal.retornarValorMoeda(obj.VALOR);
+															if (obj.$group)
+																return "<strong>" + cValor + "</strong>";
+
+															return cValor;
+														}
+													}
+													],
+													//autowidth: true,
+													prerender: true,
+													scroll: true, scrollX: false,
+													select: true
+												}
+											]
+										}
+									}
+								]
+							},
+
+							{
+								id: "list",
+								type: "clean",
+								rows: [
+
+									{
+										cells: [
+											{
+												view: "form", id: "grouplist",
+												head: "DataTable",
+												rows: [
+													{
+														height: 40,
+														type: "header",
+														template: "<div style='text-align:center'><span>Lista geral de gastos</span></div>"
+													},
+													{
+														cols: [
+															{
+																view: "combo", id: "cbItensPesquisa", value: 1, label: "Filtro:", labelWidth: 55, width: 235, suggest: [
+																	{ id: 1, value: "Origem do gasto" }, { id: 2, value: "Categoria" }],
+																on: {
+																	onChange: function (newValue, oldValue) {
+																		$$("unitlist_input").setValue("");
+
+																	}
+																}
+
+															}, {
+																view: "text", id: "unitlist_input", label: "", css: "fltr", labelWidth: 5,
+																placeholder: "digite aqui para pesquisar",
+
+															},
+														]
+													},
+													/*{
+														height: 40,
+														view: "toolbar",
+														elements: [
+															//{ view: "text", id: "unitlist_input", label: "Origem de gastos", css: "fltr", labelWidth: 170 },
+															{
+																view: "select", id: "cbPesquisa", label: "Filtrar por:", labelWidth: 95, options: [
+																	{ value: "Origem de gastos", id: 1 },
+																	{ value: "Categoria", id: 2 }
+
+																]
+															},
+															{ view: "text", id: "unitlist_input", label: ":", labelWidth: 20,Width: 30,   },
+
+
+														]
+													},*/
+													{
+														view: "unitlist",
+														id: "tree",
+														filterMode: {
+															level: 0,
+															showSubItems: 1
+														},
+														uniteBy: function (obj) {
+															return obj.NOME_MES;
+														},
+														template: function (obj) {
+															let vTipo = "<span >"
+															const valorFormatado = Intl.NumberFormat('pt-br',
+																{ style: 'currency', currency: 'BRL' }).format(obj.VALOR)
+
+
+															if (obj.TIPO != 'Entrada')
+																vTipo = "<span class='lista-text-tipo'>";
+
+															return "<div class='lista-container'>" +
+																"  <div class='lista-left-column'>" +
+																"    <span class='lista-text-top' >" + obj.NOME_ORIGEM + "</span>" +
+																"    <span > ( " + obj.NOME_CATEGORIA + " )</span><br>" +
+																"    <div class='lista-text-justificado'> <span >" + obj.OBSERVACAO + "</span></div>" +
+																"  </div>" +
+																"  <div class='lista-right-column'>" +
+																"     <span >" + formatoData(obj.DATA) + "</span><br>" +
+																"     <span >" + valorFormatado + "</span><br>" +
+																vTipo + obj.TIPO + "</span>" +
+																"  </div>" +
+																"</div>"
+
+														}
+
+														/*
+														return "<div style='text-align:center;font-family:PT Sans;font-size:14px;  '><strong style=''>" + obj.NOME_ORIGEM + "</strong> " +
+																//" <span style='font-family:PT Sans;'>Categoria:#NOME_CATEGORIA# </span>" +
+																" <span style='float:right; '>" + formatoData(obj.DATA) + " </span><br>"
+																+ " <span style='font-family:PT Sans;float:right;'>" + webix.i18n.priceFormat(obj.VALOR) + "</span>"
+																+ "<div style='text-align: justify;width: 80%; color:gray'><span style='font-family:PT Sans;float:left;'>" + (obj.OBSERVACAO) + "</span></div></div>"
+															//" <div style='padding-left:10px'> Obs.:#OBSERVACAO# </div>"}
+														}
+														*/
+
+														//	template: function (obj) {
+														//  return "<div class='listaAgrupadaValor'>" + webix.i18n. dateFormatStr(obj.Data) + "</div>" +
+														//    "<div  class='listaAgrupadaValor'>" + webix.i18n.priceFormat(obj.Valor) + "</div>";	}
+														,
+														type: {
+															height: 90
+														},
+														select: true,
+														scheme: {
+															$sort: {
+																//by: "NOME_ORIGEM",
+																//dir: "desc"
+															}
+														},
+														//data: webix.copy(groupdata),
+													}
+
+												]
+											},
+
+
+											{
+												view: "unitlist",
+												id: "tree1",
+											}
+										]
+									},
+									{ height: 5 },
+									{
+										align: "center",
+										view: "segmented",
+										multiview: true, selected: "grouplist", options: [
+											{ id: "grouplist", value: "Listagem", width: 100 },
+											{ id: "tree1", value: "2024", width: 100 }
+										],
+										on: {
+											onChange: function () {
+												console.log("cc")
+												//$$("barChart").refresh();
+											}
+										}
+									},
+									{ height: 5 }
+
+								]
+							},
+							{
+								view: "unitlist",
+								id: "members",
+								select: true,
+								scheme: {
+									$sort: {
+										by: "name",
+										dir: 'asc',
+										as: "string"
+									}
+								},
+								uniteBy: function (obj) {
+									return obj.name.substr(0, 1);
+								},
+								template: "#name#",
+								data: list_data,
+								select: true,
+								on: {
+									onAfterLoad: function () {
+										this.select(1);
+									}
+								}
+							}
+						]
+					},
+					{
+						view: "tabbar",
+						type: "iconTop",
+						multiview: true,
+						options: [
+							{ id: "pgPrincipal", icon: "flag-o", value: "Principal" },
+							{ id: "pgResumo", icon: "flag-o", value: "Resumo" },
+							{ id: "results", icon: "flag-o", value: "Geral" },
+							//{ id: "chart", icon: "bar-chart-o", value: "Chart" },
+							{ id: "list", icon: "book", value: "valores por mês" },
+							{ id: "members", icon: "user", value: "Lista de contas" }
+						]
+
+					}
+				]
+
+
+			});
+
+			$$("unitlist_input").attachEvent("onTimedKeyPress", function () {
+				var value = this.getValue().toLowerCase();
+				console.log($$("cbItensPesquisa").getValue());
+				$$("tree").filter(function (obj) {
+					if ($$("cbItensPesquisa").getValue() == 1)
+						return obj.NOME_ORIGEM.toLowerCase().indexOf(value) == 0;
+
+					return obj.NOME_CATEGORIA.toLowerCase().indexOf(value) == 0;
+				})
+			});
+
+
+
+		})
+
+
+	</script>
+	<div id="dadosContainer" style="display:none;"></div>
+	<div id="dadosContainer2" style="display:none;"></div>
+
+
+</body>
+
+</html>
